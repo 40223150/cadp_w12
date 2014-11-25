@@ -1,22 +1,11 @@
-#@+leo-ver=5-thin
-#@+node:2015.20140907143819.1791: * @file application
 ################################# 1. 宣告原始碼  coding, 導入必要模組
 #coding=utf-8
-
-
-#@@language python
-#@@tabwidth -4
-
-#@+<<declarations>>
-#@+node:2015.20140907143819.1792: ** <<declarations>> (application)
 import cherrypy
 import random
 # for path setup
 import os
 # for mako
 from mako.lookup import TemplateLookup
-# 導入 gear.py
-import gear
 
 ################################# 2. 全域變數設定, 近端與遠端目錄設定
 cwd = os.getcwd()
@@ -28,9 +17,7 @@ else:
     # 表示程式在近端執行
     template_root_dir = cwd+"/static"
     data_dir = cwd+"/local_data"
-#@-<<declarations>>
-#@+others
-#@+node:2015.20140907143819.1793: ** class Guess
+
 ################################# 3. 定義主要類別 Guess
 class Guess(object):
     # 標準答案必須利用 session 機制儲存
@@ -47,15 +34,12 @@ class Guess(object):
     'tools.sessions.timeout' : 60,
     'tools.mako.directories' :  template_root_dir+"/templates"
     }
-    #@+others
-    #@+node:2015.20140907143819.1794: *3* __init__
     def __init__(self):
         if not os.path.isdir(data_dir+"/tmp"):
             try:
                 os.makedirs(data_dir+"/tmp")
             except:
                 print("mkdir error")
-    #@+node:2015.20140907143819.1795: *3* index
     @cherrypy.expose
     def index(self, guess=None):
         # 將標準答案存入 answer session 對應區
@@ -68,7 +52,7 @@ class Guess(object):
         # 必須要從 templates 目錄取出 index.html
         內建頁面 = 套稿查詢.get_template("index.html")
         return 內建頁面.render()
-    #@+node:2015.20140907143819.1796: *3* default
+
     @cherrypy.expose
     def default(self, attr='default'):
         # 內建 default 方法, 找不到執行方法時, 會執行此方法
@@ -76,7 +60,7 @@ class Guess(object):
         # 必須要從 templates 目錄取出 index.html
         內建頁面 = 套稿查詢.get_template("default.html")
         return 內建頁面.render()
-    #@+node:2015.20140907143819.1797: *3* doCheck
+
     @cherrypy.expose
     def doCheck(self, guess=None):
         # 假如使用者直接執行 doCheck, 則設法轉回根方法
@@ -104,22 +88,16 @@ class Guess(object):
         else:
             thecount = cherrypy.session.get('count')
             return 內建頁面.render(輸入="exact", theanswer=theanswer, thecount=thecount)
-    #@+node:2015.20140907143819.1798: *3* mytest
+
     @cherrypy.expose
     def mytest(self):
         套稿查詢 = TemplateLookup(directories=[template_root_dir+"/templates"])
         # 必須要從 templates 目錄取出 mytest.html
         內建頁面 = 套稿查詢.get_template("mytest.html")
         return 內建頁面.render()
-    #@-others
-#@-others
-################################# 4. 程式啟動設定與執行
-#root = Guess()
-root = gear.Gear()
-# 將 gear.py 中的 Gear() 類別與 gear URL 對應
-#root.gear = gear.Gear()
-root.guess = Guess()
 
+################################# 4. 程式啟動設定與執行
+root = Guess()
 application_conf = {# 設定靜態 templates 檔案目錄對應
         '/templates':{
         'tools.staticdir.on': True,
@@ -134,4 +112,3 @@ if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
 else:
     # 表示在近端執行
     cherrypy.quickstart(root, config = application_conf)
-#@-leo
